@@ -66,7 +66,7 @@ impl<'src> Node<'src> for Item<'src> {
 
 impl<'src> Node<'src> for Namepath<'src> {
   fn tree(&self) -> Tree<'src> {
-    match self.len() {
+    match self.components() {
       1 => Tree::atom(self.last().lexeme()),
       _ => Tree::list(
         self
@@ -238,7 +238,7 @@ impl<'src> Node<'src> for UnresolvedRecipe<'src> {
       let mut subsequents = Tree::atom("sups");
 
       for (i, dependency) in self.dependencies.iter().enumerate() {
-        let mut d = Tree::atom(dependency.recipe.lexeme());
+        let mut d = dependency.recipe.tree();
 
         for argument in &dependency.arguments {
           d.push_mut(argument.tree());
@@ -304,6 +304,7 @@ impl<'src> Node<'src> for Set<'src> {
       Setting::AllowDuplicateRecipes(value)
       | Setting::AllowDuplicateVariables(value)
       | Setting::DotenvLoad(value)
+      | Setting::DotenvOverride(value)
       | Setting::DotenvRequired(value)
       | Setting::Export(value)
       | Setting::Fallback(value)

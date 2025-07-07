@@ -235,7 +235,7 @@ impl<'src> Error<'src> {
         output_error: OutputError::Interrupted(signal),
         ..
       }
-      | Self::Interrupted { signal } => signal.code(),
+      | Self::Interrupted { signal } => Some(signal.code()),
       _ => None,
     }
   }

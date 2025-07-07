@@ -150,8 +150,13 @@ impl<'run, 'src> Analyzer<'run, 'src> {
       }
     }
 
-    let recipes =
-      RecipeResolver::resolve_recipes(&assignments, &self.enums, &settings, deduplicated_recipes)?;
+    let recipes = RecipeResolver::resolve_recipes(
+      &assignments,
+      &self.enums,
+      &self.modules,
+      &settings,
+      deduplicated_recipes,
+    )?;
 
     let mut aliases = Table::new();
     while let Some(alias) = self.aliases.pop() {
@@ -302,7 +307,7 @@ impl<'run, 'src> Analyzer<'run, 'src> {
     recipes: &'a Table<'src, Rc<Recipe<'src>>>,
     alias: Alias<'src, Namepath<'src>>,
   ) -> CompileResult<'src, Alias<'src>> {
-    match Self::alias_target(&alias.target, modules, recipes) {
+    match Self::resolve_recipe(&alias.target, modules, recipes) {
       Some(target) => Ok(alias.resolve(target)),
       None => Err(alias.name.token.error(UnknownAliasTarget {
         alias: alias.name.lexeme(),
@@ -311,7 +316,7 @@ impl<'run, 'src> Analyzer<'run, 'src> {
     }
   }
 
-  fn alias_target<'a>(
+  pub(crate) fn resolve_recipe<'a>(
     path: &Namepath<'src>,
     mut modules: &'a Table<'src, Justfile<'src>>,
     mut recipes: &'a Table<'src, Rc<Recipe<'src>>>,
